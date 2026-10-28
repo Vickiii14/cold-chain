@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ColdSense Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="aurora"><span></span><span></span><span></span></div>
+<nav class="top scrolled"><div class="container row">
+  <a href="index.html" class="logo"><i>❄</i> ColdSense</a>
+  <div style="display:flex;gap:12px;align-items:center">
+    <span id="status" class="status demo"><span class="dot"></span><span id="statusTxt">Demo mode</span></span>
+    <a href="index.html" class="btn ghost sm">← Home</a>
+  </div>
+</div></nav>
+
+<main class="dash"><div class="container">
+  <div class="dash-head">
+    <div><h1>Package <span class="grad-text">Safe-Life Monitor</span></h1>
+      <p>Simulated temperature-sensitive package · Safe band <span class="mono">2 – 8 °C</span> · <span id="lastSeen">waiting for data…</span></p></div>
+    <div class="sim" id="simControls">
+      <button class="btn ghost sm" id="bHeat">🔥 Cooling fault</button>
+      <button class="btn ghost sm" id="bFix">❄ Restore cooling</button>
+      <button class="btn ghost sm" id="bShock">💥 Inject shock</button>
+      <button class="btn ghost sm" id="bReset">↺ Reset</button>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="card kpi" style="--glow:rgba(34,211,238,.2)"><small>Temperature</small><b id="kTemp">--</b><span id="kTempS">—</span></div>
+    <div class="card kpi" style="--glow:rgba(59,130,246,.2)"><small>Humidity</small><b id="kHum">--</b><span>relative</span></div>
+    <div class="card kpi" style="--glow:rgba(52,211,153,.2)"><small>Condition</small><b id="kCond">--</b><span>remaining safe-life</span></div>
+    <div class="card kpi"><small>Risk level</small><b id="kLvl">--</b><span id="kRisk">cumulative risk —</span></div>
+    <div class="card kpi"><small>Sampling</small><b id="kInt">--</b><span id="kSave">—</span></div>
+    <div class="card kpi decision"><small>Decision</small><b id="kDec">--</b><span id="kCool">—</span></div>
+  </div>
+
+  <div class="panels">
+    <div class="panel span8"><h3>Temperature <small>live · dashed lines = safe band</small></h3><div class="chart-box"><canvas id="chTemp"></canvas></div></div>
+    <div class="panel span4"><h3>Remaining safe-life</h3>
+      <div class="ring"><svg viewBox="0 0 200 200"><circle class="track" cx="100" cy="100" r="86" fill="none" stroke-width="14"/><circle class="val" id="ringV" cx="100" cy="100" r="86" fill="none" stroke-width="14" stroke-linecap="round" stroke-dasharray="540.35" stroke-dashoffset="540.35" stroke="#34d399"/></svg>
+        <div class="c"><b id="ringT">--</b><small>condition</small></div></div>
+      <div class="meta">
+        <div><small>Excursions</small><b id="mExc">0</b></div>
+        <div><small>Shock events</small><b id="mShock">0</b></div>
+        <div><small>Time out of range</small><b id="mOut">0 s</b></div>
+        <div><small>Peak temp</small><b id="mPeak">--</b></div>
+      </div>
+    </div>
+    <div class="panel span6"><h3>Cumulative risk <small>area = exposure damage</small></h3><div class="chart-box sm"><canvas id="chRisk"></canvas></div></div>
+    <div class="panel span6"><h3>Humidity <small>%RH</small></h3><div class="chart-box sm"><canvas id="chHum"></canvas></div></div>
+    <div class="panel span6"><h3>Adaptive sampling interval <small>seconds between samples</small></h3><div class="chart-box sm"><canvas id="chInt"></canvas></div></div>
+    <div class="panel span6"><h3>Shock / vibration <small>peak g</small></h3><div class="chart-box sm"><canvas id="chShock"></canvas></div></div>
+    <div class="panel span12"><h3>Event log <small>latest first</small></h3>
+      <div class="scroll"><table><thead><tr><th>Time</th><th>Event</th><th>Temp</th><th>Condition</th><th>Decision</th></tr></thead><tbody id="log"></tbody></table></div></div>
+  </div>
+</div></main>
+<div class="toast" id="toast"></div>
+<script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

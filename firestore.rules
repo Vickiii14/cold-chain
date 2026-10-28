@@ -1,0 +1,12 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // PROTOTYPE RULES: public read + create-only writes for the "readings" collection.
+    // Tighten before any real deployment (add App Check or a device token).
+    match /readings/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['t','temp','hum','cond','decision']);
+      allow update, delete: if false;
+    }
+  }
+}

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ColdSense — Intelligent Cold-Chain Remaining Safe-Life Prediction</title>
+<meta name="description" content="ESP32 + IoT cold-chain monitor that predicts remaining safe-life from cumulative exposure, with adaptive sampling and edge decision-making.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="aurora"><span></span><span></span><span></span></div>
+<canvas id="bg-canvas"></canvas>
+
+<nav class="top" id="nav"><div class="container row">
+  <a href="#" class="logo"><i>❄</i> ColdSense</a>
+  <div class="links"><a href="#how">How it works</a><a href="#risk">Risk engine</a><a href="#features">Features</a><a href="#arch">Architecture</a><a href="#hardware">Hardware</a></div>
+  <a href="dashboard.html" class="btn primary sm">Open Dashboard →</a>
+</div></nav>
+
+<header class="hero"><div class="container grid">
+  <div>
+    <div class="pill"><span class="dot"></span> Embedded Systems · IoT · Edge Intelligence</div>
+    <h1>Don't just alert.<br><span class="grad-text">Predict remaining safe-life.</span></h1>
+    <p class="lead">An ESP32-powered cold-chain monitor that tracks temperature, humidity and shocks, accumulates exposure damage over time, and tells you exactly how much usable life your package has left.</p>
+    <div class="cta">
+      <a href="dashboard.html" class="btn primary">Launch Live Dashboard</a>
+      <a href="#how" class="btn ghost">See how it works</a>
+    </div>
+    <div class="hero-stats">
+      <div><b class="count" data-to="3">0</b><span>Adaptive sampling levels</span></div>
+      <div><b class="count" data-to="5">0</b><span>Decision outcomes</span></div>
+      <div><b>Edge</b><span>Works offline</span></div>
+    </div>
+  </div>
+  <div class="orb">
+    <svg viewBox="0 0 200 200">
+      <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset=".6" stop-color="#3b82f6"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+      <circle class="track" cx="100" cy="100" r="86" fill="none" stroke-width="12"/>
+      <circle class="val" id="heroRing" cx="100" cy="100" r="86" fill="none" stroke-width="12" stroke-dasharray="540.35" stroke-dashoffset="540.35"/>
+    </svg>
+    <div class="center"><small>Product condition</small><b id="heroPct">0%</b><em>● CONTINUE</em></div>
+    <div class="chip c1"><span style="color:var(--mute)">Temperature</span><b style="color:var(--cyan)">4.8 °C</b></div>
+    <div class="chip c2"><span style="color:var(--mute)">Sampling</span><b style="color:var(--green)">30 s · low risk</b></div>
+    <div class="chip c3"><span style="color:var(--mute)">Shock events</span><b style="color:var(--amber)">1 detected</b></div>
+  </div>
+</div></header>
+
+<div class="stats-band"><div class="container grid4">
+  <div class="rv"><b class="grad-text count" data-to="4" data-suffix="">0</b><span>Sensing channels</span></div>
+  <div class="rv d1"><b class="grad-text count" data-to="100" data-suffix="%">0</b><span>Edge-computed risk</span></div>
+  <div class="rv d2"><b class="grad-text count" data-to="90" data-suffix="%">0</b><span>Fewer samples when safe</span></div>
+  <div class="rv d3"><b class="grad-text">MQTT / HTTP</b><span>Cloud telemetry</span></div>
+</div></div>
+
+<section id="how"><div class="container">
+  <div class="eyebrow rv">Pipeline</div>
+  <h2 class="sec-title rv">From raw sensor data to a clear decision</h2>
+  <p class="sec-sub rv">Every reading flows through the same six stages, all running on the ESP32 itself.</p>
+  <div class="pipe">
+    <div class="card step rv"><div class="n">1</div><h4>Sense</h4><p>Temperature, humidity and motion are sampled continuously.</p></div>
+    <div class="card step rv d1"><div class="n">2</div><h4>Timestamp</h4><p>Each important event is logged into the exposure history.</p></div>
+    <div class="card step rv d2"><div class="n">3</div><h4>Accumulate</h4><p>Severity × duration × repetition builds a dynamic risk score.</p></div>
+    <div class="card step rv d3"><div class="n">4</div><h4>Estimate</h4><p>Risk becomes a remaining safe-life percentage.</p></div>
+    <div class="card step rv d4"><div class="n">5</div><h4>Adapt</h4><p>Sampling speeds up or slows down with the risk level.</p></div>
+    <div class="card step rv d4"><div class="n">6</div><h4>Decide</h4><p>A plain recommendation: continue, monitor, inspect…</p></div>
+  </div>
+</div></section>
+
+<section id="risk"><div class="container split">
+  <div>
+    <div class="eyebrow rv">Cumulative risk algorithm</div>
+    <h2 class="sec-title rv">A product remembers every bad minute</h2>
+    <p class="sec-sub rv" style="margin-bottom:26px">A fixed threshold forgets. Our engine integrates how far, how long and how often conditions leave the safe band, so a short spike and a long drift are treated differently.</p>
+    <div class="formula rv">
+<span class="c">// every sample, Δt in seconds</span><br>
+excursion = <span class="k">max</span>(T − T_max, T_min − T, 0)<br>
+risk += excursion · (Δt/60) · k₁ · (1 + 0.25·repeats)<br>
+risk += <span class="k">max</span>(shock_g − 1.8, 0) · k₂<br>
+condition = <span class="k">max</span>(0, 100 − risk)
+    </div>
+  </div>
+  <div class="levels">
+    <div class="lvl rv"><div class="bar" style="background:var(--green)"></div><b>CONTINUE</b><span>≥ 90 %</span></div>
+    <div class="lvl rv d1"><div class="bar" style="background:var(--cyan)"></div><b>MONITOR</b><span>75 – 89 %</span></div>
+    <div class="lvl rv d2"><div class="bar" style="background:var(--amber)"></div><b>PRIORITIZE DELIVERY</b><span>60 – 74 %</span></div>
+    <div class="lvl rv d3"><div class="bar" style="background:var(--orange)"></div><b>INSPECTION REQUIRED</b><span>40 – 59 %</span></div>
+    <div class="lvl rv d4"><div class="bar" style="background:var(--red)"></div><b>HIGH RISK</b><span>&lt; 40 %</span></div>
+  </div>
+</div></section>
+
+<section id="features"><div class="container">
+  <div class="eyebrow rv">Features</div>
+  <h2 class="sec-title rv">Built like a product, priced like a prototype</h2>
+  <p class="sec-sub rv">The research focus: exposure-based remaining-life estimation combined with risk-driven adaptive sensing.</p>
+  <div class="grid3">
+    <div class="card rv"><div class="ico">🌡️</div><h3>Exposure-based life</h3><p>Condition percentage is computed from the product's entire history, not a single reading.</p></div>
+    <div class="card rv d1"><div class="ico">⚡</div><h3>Adaptive sampling</h3><p>Long intervals when safe to save battery; rapid sampling when conditions turn critical.</p></div>
+    <div class="card rv d2"><div class="ico">🧠</div><h3>Edge processing</h3><p>Risk and decisions are computed on-device, so monitoring continues without internet.</p></div>
+    <div class="card rv"><div class="ico">📳</div><h3>Shock detection</h3><p>MPU6050 flags drops and rough handling, adding to the risk score.</p></div>
+    <div class="card rv d1"><div class="ico">📟</div><h3>Local OLED</h3><p>Temperature, humidity, risk level, life estimate and status — right on the package.</p></div>
+    <div class="card rv d2"><div class="ico">☁️</div><h3>Cloud dashboard</h3><p>Firebase-backed live charts and history for remote monitoring and analysis.</p></div>
+  </div>
+</div></section>
+
+<section id="arch"><div class="container">
+  <div class="eyebrow rv">System architecture</div>
+  <h2 class="sec-title rv">Three layers, one tight loop</h2>
+  <p class="sec-sub rv">Sensing, edge intelligence, and cloud visibility.</p>
+  <div class="arch rv">
+    <div class="box"><h4>Sensing layer</h4><ul><li>DHT11 temp / humidity</li><li>MPU6050 accelerometer</li><li>Peltier + fan cooling box</li></ul></div>
+    <div class="arrow">➜</div>
+    <div class="box"><h4>ESP32 edge</h4><ul><li>Cumulative risk engine</li><li>Safe-life estimator</li><li>Adaptive sampling</li><li>Decision engine · OLED</li></ul></div>
+    <div class="arrow">➜</div>
+    <div class="box"><h4>Cloud</h4><ul><li>Wi-Fi · HTTP / MQTT</li><li>Firebase Firestore</li><li>Vercel-hosted dashboard</li></ul></div>
+  </div>
+</div></section>
+
+<section id="hardware"><div class="container">
+  <div class="eyebrow rv">Hardware</div>
+  <h2 class="sec-title rv">Low-cost prototype bill of materials</h2>
+  <p class="sec-sub rv">Demonstrated with a simulated temperature-sensitive package — no claims about real vaccines or medicines.</p>
+  <div class="parts rv">
+    <div class="part"><b>1×</b>ESP32</div><div class="part"><b>1×</b>DHT11</div><div class="part"><b>1×</b>OLED display</div>
+    <div class="part"><b>1×</b>MPU6050</div><div class="part"><b>4×</b>3.7 V 1800 mAh Li-ion</div><div class="part"><b>1×</b>4-cell holder</div>
+    <div class="part"><b>2×</b>Peltier</div><div class="part"><b>3×</b>12 V fan</div><div class="part"><b>1×</b>Buck converter</div>
+    <div class="part"><b>1×</b>Breadboard + jumpers</div>
+  </div>
+</div></section>
+
+<section><div class="container"><div class="cta-final rv">
+  <h2>See it running <span class="grad-text">live</span></h2>
+  <p>Open the dashboard, inject a heat spike or a shock, and watch the safe-life estimate respond.</p>
+  <a href="dashboard.html" class="btn primary">Open Dashboard →</a>
+</div></div></section>
+
+<footer>ColdSense · Intelligent Cold-Chain Remaining Safe-Life Prediction · Embedded Systems &amp; IoT academic prototype</footer>
+
+<script src="js/landing.js"></script>
+</body>
+</html>
